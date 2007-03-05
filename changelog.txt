@@ -1,5 +1,9 @@
 dskwipe changelog
 
+Version 0.2 - 05 Mar 07:
+
+	Corrected a few minor grammatical errors
+
 Version 0.1 - 27 Feb 07:
 
 	Initial release

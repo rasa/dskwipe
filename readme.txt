@@ -1,4 +1,4 @@
-dskwipe 0.1 - Feb 27 2007
+dskwipe 0.2 - Mar 05 2007
 Copyright (c) 2006-2007 Ross Smith II (http://smithii.com) All Rights Reserved
 
 ------------------------------------------------------------------------------
