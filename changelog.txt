@@ -1,0 +1,5 @@
+dskwipe changelog
+
+Version 0.1 - 27 Feb 07:
+
+	Initial release
