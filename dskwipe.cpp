@@ -1361,7 +1361,7 @@ int main(int argc, char * argv[]) {
 		);
 		char buf[256];
 		fgets(buf, sizeof(buf), stdin);
-		if (strlen(buf) == 3 && stricmp(buf, "yes") != 0) {
+		if (strlen(buf) != 4 || strnicmp(buf, "yes", 3) != 0) {
 			printf("Processing aborted");
 			exit(0);
 		}

@@ -18,7 +18,7 @@ General Public License for more details.
 #define VER_INTERNAL_NAME 		"dskwipe"
 #define	VER_FILE_DESCRIPTION	"Securely wipe disk media"
 #define VER_MAJOR				0
-#define VER_MINOR				2
-#define VER_STRING2				"0.2"
+#define VER_MINOR				3
+#define VER_STRING2				"0.3"
 
 #include "ver_defaults.h"
