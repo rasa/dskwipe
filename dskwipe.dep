@@ -1,13 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by dskwipe.mak
 
 .\dskwipe.cpp : \
-	"..\..\..\..\..\progra~1\mifd68~1\include\basetsd.h"\
-	"..\..\..\..\..\progra~1\mifd68~1\include\guiddef.h"\
-	"..\..\..\..\..\progra~1\mifd68~1\include\propidl.h"\
-	"..\..\..\..\..\progra~1\mifd68~1\include\reason.h"\
-	"..\..\..\..\..\progra~1\mifd68~1\include\stralign.h"\
-	"..\..\..\..\..\progra~1\mifd68~1\include\tvout.h"\
-	"..\..\..\..\..\progra~1\mifd68~1\include\winefs.h"\
 	"..\shared\getopt.h"\
 	"..\shared\ver_defaults.h"\
 	".\version.h"\

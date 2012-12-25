@@ -2,7 +2,7 @@
 
 $Id$
 
-Copyright (c) 2005-2006 Ross Smith II (http://smithii.com). All rights reserved.
+Copyright (c) 2005-2012 Ross Smith II (http://smithii.com). All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of version 2 of the GNU General Public License
@@ -59,6 +59,18 @@ int dod7_bytes[] = {0x35, 0xca, 0x97, 0x68, 0xac, 0x53, -1};
 
 int dod7_elements = sizeof(dod7_bytes) / sizeof(dod7_bytes[0]);
 
+int bci_bytes[] = {0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0xaa};
+
+int bci_elements = sizeof(bci_bytes) / sizeof(bci_bytes[0]);
+
+int doe_bytes[] = {-1, -1, 0x00};
+
+int doe_elements = sizeof(doe_bytes) / sizeof(doe_bytes[0]);
+
+int schneier_bytes[] = {0xff, 0x00, -1, -1, -1, -1, -1};
+
+int schneier_elements = sizeof(schneier_bytes) / sizeof(schneier_bytes[0]);
+
 // source: http://www.cs.auckland.ac.nz/~pgut001/pubs/secure_del.html
 int gutmann_bytes[][BYTES_PER_ELEMENT] = {
 	{-1,   -1,   -1}, // 1
@@ -110,21 +122,27 @@ int gutmann_elements = sizeof(gutmann_bytes) / sizeof(gutmann_bytes[0]);
 
 #define FORMAT_STRING "%4d %6d %4s %7.3f%% %7.3f%%%9s%9s %8s %8s%9.2f\r"
 
-static char *short_options = "12de:fgkln:p:qrs:vx:yz:D?"
+static char *short_options = "12bde:Efgikln:p:qrs:Svx:yz:D?"
+
 #ifdef HAVE_CRYPTOGRAPHIC
 	"3"
 #endif
 	;
 
 static struct option long_options[] = {
+  {"bci",		no_argument,		0, 'b'},
+  {"bruce",		no_argument,		0, 'S'},
   {"dod",		no_argument,		0, 'd'},
   {"dod3",		no_argument,		0, 'd'},
   {"dod7",		no_argument,		0, 'D'},
+  {"doe",		no_argument,		0, 'E'},
   {"end",		required_argument,	0, 'e'},
   {"exit",		required_argument,	0, 'x'},
   {"force",		no_argument,		0, 'f'},
   {"gutmann",	no_argument,		0, 'g'},
   {"help",		no_argument,		0, '?'},
+  {"ignore",	no_argument,		0, 'i'},
+  {"ignore-errors",	no_argument,		0, 'i'},
   {"kilo",		no_argument,		0, 'k'},
   {"kilobyte",	no_argument,		0, 'k'},
   {"list",		no_argument,		0, 'l'},
@@ -133,9 +151,11 @@ static struct option long_options[] = {
   {"quiet",		no_argument,		0, 'q'},
   {"read",		no_argument,		0, 'r'},
   {"refresh",	required_argument,	0, 'z'},
+  {"schneier",	no_argument,		0, 'S'},
   {"sectors",	required_argument,	0, 'n'},
   {"start",		required_argument,	0, 's'},
   {"version",	no_argument,		0, 'v'},
+  {"vsitr",		no_argument,		0, 'b'},
   {"windows",	no_argument,		0, '2'},
   {"yes",		no_argument,		0, 'y'},
 
@@ -190,9 +210,12 @@ void _usage() {
 		"\nOptions:\n"
 		" -l | --list      List available devices and exit\n"
 		" -p | --passes n  Wipe device n times (default is 1)\n"
-		" -d | --dod       Wipe device using DoD 5220.22-M method (3 passes)\n"
-		" -D | --dod7      Wipe device using DoD 5200.28-STD method (7 passes)\n"
-		" -g | --gutmann   Wipe device using Gutmann method (35 passes)\n"
+		" -d | --dod       Wipe device using US DoD 5220.22-M method (3 passes)\n"
+		" -E | --doe       Wipe device using US DoE method (3 passes)\n"
+		" -D | --dod7      Wipe device using US DoD 5200.28-STD method (7 passes)\n"
+		" -S | --schneier  Wipe device using Bruce Schneier's method (7 passes)\n"
+		" -b | --bci       Wipe device using German BCI/VSITR method (7 passes)\n"
+		" -g | --gutmann   Wipe device using Peter Gutmann's method (35 passes)\n"
 		" -1 | --pseudo    Use pseudo RNG (fast, not secure, this is the default)\n"
 		" -2 | --windows   Use Windows RNG (slower, more secure)\n"
 #ifdef HAVE_CRYPTOGRAPHIC
@@ -213,13 +236,14 @@ void _usage() {
 		" -R | --reboot    Reboot computer when finished\n"
 		" -T | --standby   Standby computer when finished\n"
 */
-		" -F | --force     Force poweroff/shutdown/logoff/reboot (WARNING: DATA LOSS!)\n"
+		" -f | --force     Force poweroff/shutdown/logoff/reboot (WARNING: DATA LOSS!)\n"
 		" -q | --quiet     Display less information (-qq = quieter, etc.)\n"
 		" -z | --refresh n Refresh display every n seconds (default is 1)\n"
 		" -n | --sectors n Write n sectors at once (1-65535, default is %d)\n"
 		" -s | --start   n Start at relative sector n (default is 0)\n"
 		" -e | --end     n End at relative sector n (default is last sector)\n"
 		" -r | --read      Only read the data on the device (DOES NOT WIPE!)\n"
+		" -i | --ignore    Ignore certain read/write errors\n"
 		" -v | --version   Show version and copyright information and quit\n"
 		" -? | --help      Show this help message and quit (-?? = more help, etc.)\n",
 		progname, SECTORS_PER_READ);
@@ -259,17 +283,24 @@ typedef enum {
 	WIPEMODE_NORMAL,
 	WIPEMODE_DOD,
 	WIPEMODE_DOD7,
-	WIPEMODE_GUTMANN
+	WIPEMODE_GUTMANN,
+	WIPEMODE_DOE,
+	WIPEMODE_SCHNEIER,
+	WIPEMODE_BCI
 } WipeMode;
 
 char *wipe_methods[] = {
 	"standard wiping method (1 pass per iteration)",
-	"DoD 5220.22-M wiping method (3 passes per iteration)",
-	"DoD 5200.28-STD wiping method (7 passes per iteration)",
-	"Gutmann wiping method (35 passes per iteration)"
+	"US DoD 5220.22-M wiping method (3 passes per iteration)",
+	"US DoD 5200.28-STD wiping method (7 passes per iteration)",
+	"Peter Gutmann's wiping method (35 passes per iteration)",
+	"US DoE wiping method (3 passes per iteration)",
+	"Bruce Schneier's wiping method (7 passes per iteration)",
+	"German BCI/VSITR wiping method (7 passes per iteration)"
 };
 
 typedef enum {
+	RANDOM_NONE,
 	RANDOM_PSEUDO,
 	RANDOM_WINDOWS,
 #ifdef HAVE_CRYPTOGRAPHIC
@@ -293,6 +324,7 @@ struct _opt {
 	unsigned int	help;
 	bool			kilobyte;
 	unsigned int	refresh;
+	bool			ignore;
 };
 
 typedef struct _opt t_opt;
@@ -302,7 +334,7 @@ static t_opt opt = {
 	0,					/* passes */
 	WIPEMODE_NORMAL,	/* normal, dod, dod7, gutmann */
 	false,				/* yes */
-	RANDOM_PSEUDO,		/* pseudo, windows, cryptographic */
+	RANDOM_NONE,		/* pseudo, windows, cryptographic */
 	EXIT_NONE,			/* none, poweroff, shutdown, hibernate, logoff, reboot, standby */
 	false,				/* force */
 	0,					/* quiet */
@@ -313,6 +345,7 @@ static t_opt opt = {
 	0,					/* help */
 	false,				/* kilobyte */
 	1,					/* refresh */
+	false,				/* ignore */
 };
 
 /* per http://www.scit.wlv.ac.uk/cgi-bin/mansec?3C+basename */
@@ -333,7 +366,7 @@ static char* basename(char* s) {
 	return s;
 }
 
-static void FatalError(char *str) {
+static void Warning(char *str) {
 	LPVOID lpMsgBuf;
 	DWORD err = GetLastError();
 	FormatMessage(
@@ -346,7 +379,21 @@ static void FatalError(char *str) {
 		(LPTSTR) &lpMsgBuf,
 		0,
 		NULL);
-	fprintf(stderr, "\n%s: %s\n", str, lpMsgBuf);
+	fprintf(stderr, "\n%s: %s (0x%x)\n", str, lpMsgBuf, err);
+}
+
+static void Error(char *str) {
+	DWORD err = GetLastError();
+	Warning(str);
+	if (opt.ignore) {
+		return;
+	}
+	exit(err ? err : 1);
+}
+
+static void FatalError(char *str) {
+	DWORD err = GetLastError();
+	Warning(str);
 	exit(err ? err : 1);
 }
 
@@ -378,6 +425,17 @@ static char *seconds_to_hhmmss(DWORD seconds, char *rv, int bufsiz) {
 	DWORD minutes = seconds / 60;
 	seconds -= minutes * 60;
 
+	if (hours > 99) {
+		DWORD days = hours / 24;
+		hours -= days * 24;
+		if (days > 99) {
+			_snprintf(rv, bufsiz, "%03dd %02dh", days, hours);
+			return rv;
+		}
+		_snprintf(rv, bufsiz, "%02dd%02d%02d", days, hours, minutes);
+		return rv;
+	}
+	
 	_snprintf(rv, bufsiz, "%02d:%02d:%02d", hours, minutes, seconds);
 
 	return rv;
@@ -763,11 +821,72 @@ static void list_devices() {
 	}
 }
 
-int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTPROV hProv, HCRYPTKEY hKey) {
+void print_device_info(char *device_name) {
+	char szCFDevice[MAX_PATH];
+	char szDosDevice[MAX_PATH];
+	int nDosLinkCreated = FakeDosNameForDevice(device_name, szDosDevice, szCFDevice, FALSE);
+	char err[256];
+
+	printf("Device:          %s\n", device_name);
+	SetErrorMode(SEM_NOOPENFILEERRORBOX);
+
+	HANDLE hnd = CreateFile(
+		szCFDevice,
+		GENERIC_READ,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		0,
+		NULL);
+
+	if (hnd == INVALID_HANDLE_VALUE) {
+		_snprintf(err, sizeof(err), "Cannot open '%s'", device_name);
+		FatalError(err);
+	}
+
+	DISK_GEOMETRY driveInfo;
+	PARTITION_INFORMATION diskInfo;
+	DWORD dwResult;
+	BOOL bResult;
+
+	dwResult = 0;
+
+	bResult = DeviceIoControl(
+			hnd,
+			IOCTL_DISK_GET_DRIVE_GEOMETRY,
+			NULL,
+			0,
+			&driveInfo,
+			sizeof(driveInfo),
+			&dwResult,
+			NULL);
+
+	if (!bResult) {
+		_snprintf(err, sizeof(err), "Cannot query '%s'", device_name);
+		FatalError(err);
+	}
+
+	CloseHandle(hnd);
+
+	ULONGLONG last_sector = driveInfo.Cylinders.QuadPart * driveInfo.TracksPerCylinder * driveInfo.SectorsPerTrack;
+	ULONGLONG total_sectors = last_sector + 1;
+	ULONGLONG total_bytes = total_sectors * driveInfo.BytesPerSector;
+
+	wchar_t size[512];
+	GetSizeString(total_bytes, size);
+
+	printf("Cylinders:       %I64d\n", driveInfo.Cylinders.QuadPart);
+	printf("Tracks/cylinder: %d\n", driveInfo.TracksPerCylinder);
+	printf("Sectors/track:   %d\n", driveInfo.SectorsPerTrack);
+	printf("Bytes/sector:    %d\n", driveInfo.BytesPerSector);
+	printf("Total Sectors:   %I64d\n", total_sectors);
+	printf("Total Bytes:     %I64d\n", total_bytes);
+	printf("Size:            %S\n", size);
+}
+
+int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTPROV hProv) {
 	stats->start_ticks = get_ticks(stats);
 	stats->wiping_ticks = 0;
-	GetLocalTime(&stats->lpStartTime);
-	systemtime_to_hhmmss(&stats->lpStartTime, stats->start_time, sizeof(stats->start_time));
 	stats->start_ticks = get_ticks(stats);
 
 	stats->device_name = device_name;
@@ -786,6 +905,8 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 			printf("%s\r", device_name);
 			break;
 	}
+
+	SetErrorMode(SEM_NOOPENFILEERRORBOX);
 
 	HANDLE hnd = CreateFile(
 		szCFDevice,
@@ -807,6 +928,26 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 	PARTITION_INFORMATION diskInfo;
 	DWORD dwResult;
 	BOOL bResult;
+
+	dwResult = 0;
+
+	bResult = DeviceIoControl(
+		hnd,            // handle to a volume
+		FSCTL_LOCK_VOLUME,   // dwIoControlCode
+		NULL,                        // lpInBuffer
+		0,                           // nInBufferSize
+		NULL,                        // lpOutBuffer
+		0,                           // nOutBufferSize
+		&dwResult,   // number of bytes returned
+		NULL
+	);
+
+	if (!bResult) {
+		_snprintf(err, sizeof(err), "Cannot lock volume '%s'", device_name);
+		FatalError(err);
+	}
+
+	dwResult = 0;
 
 	bResult = DeviceIoControl(
 			hnd,
@@ -892,16 +1033,21 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 	unsigned char *sector_data = (unsigned char *) malloc(bytes_to_process + BYTES_PER_ELEMENT);
 
 	if (opt.quiet == 0) {
-		printf(HEADER, opt.kilobyte ? " MB" : "MiB");
+		printf(HEADER, opt.kilobyte ? " MiB" : "MB");
 	}
 
 	for (unsigned int pass = 1; pass <= opt.passes; ++pass) {
-		int byte_to_write;
+		int byte_to_write = 0;
+
+		GetLocalTime(&stats->lpStartTime);
+		systemtime_to_hhmmss(&stats->lpStartTime, stats->start_time, sizeof(stats->start_time));
 
 		unsigned char chars[3];
 
 		unsigned int n;
 		int j;
+
+		RandomMode random = (bytes == 0) ? opt.random : RANDOM_NONE;
 
 		switch (opt.mode) {
 			case WIPEMODE_NORMAL:
@@ -910,6 +1056,11 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 				} else {
 					int n = (pass - 1) % bytes;
 					byte_to_write = byte[n];
+					if (byte_to_write < 0) {
+						if (random == RANDOM_NONE) {
+							random = opt.random ? opt.random : RANDOM_PSEUDO;
+						}
+					}
 				}
 
 				for (j = 0; j < BYTES_PER_ELEMENT; ++j) {
@@ -920,6 +1071,13 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 			case WIPEMODE_DOD:
 				n = (pass - 1) % dod_elements;
 				byte_to_write = dod_bytes[n];
+				if (byte_to_write < 0) {
+					if (random == RANDOM_NONE) {
+						random = opt.random ? opt.random : RANDOM_PSEUDO;
+					}
+				} else {
+					random = RANDOM_NONE;
+				}
 				for (j = 0; j < BYTES_PER_ELEMENT; ++j) {
 					chars[j] = (unsigned char) byte_to_write;
 				}
@@ -928,6 +1086,13 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 			case WIPEMODE_DOD7:
 				n = (pass - 1) % dod7_elements;
 				byte_to_write = dod7_bytes[n];
+				if (byte_to_write < 0) {
+					if (random == RANDOM_NONE) {
+						random = opt.random ? opt.random : RANDOM_PSEUDO;
+					}
+				} else {
+					random = RANDOM_NONE;
+				}
 				for (j = 0; j < BYTES_PER_ELEMENT; ++j) {
 					chars[j] = (unsigned char) byte_to_write;
 				}
@@ -936,35 +1101,86 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 			case WIPEMODE_GUTMANN:
 				n = (pass - 1) % gutmann_elements;
 				byte_to_write = gutmann_bytes[n][0];
+				if (byte_to_write < 0) {
+					if (random == RANDOM_NONE) {
+						random = opt.random ? opt.random : RANDOM_PSEUDO;
+					}
+				} else {
+					random = RANDOM_NONE;
+				}
 				for (j = 0; j < BYTES_PER_ELEMENT; ++j) {
 					chars[j] = (unsigned char) gutmann_bytes[n][j];
 				}
 				break;
+
+			case WIPEMODE_DOE:
+				n = (pass - 1) % doe_elements;
+				byte_to_write = doe_bytes[n];
+				if (byte_to_write < 0) {
+					if (random == RANDOM_NONE) {
+						random = opt.random ? opt.random : RANDOM_PSEUDO;
+					}
+				} else {
+					random = RANDOM_NONE;
+				}
+				for (j = 0; j < BYTES_PER_ELEMENT; ++j) {
+					chars[j] = (unsigned char) byte_to_write;
+				}
+				break;
+
+			case WIPEMODE_SCHNEIER:
+				n = (pass - 1) % schneier_elements;
+				byte_to_write = schneier_bytes[n];
+				if (byte_to_write < 0) {
+					if (random == RANDOM_NONE) {
+						random = opt.random ? opt.random : RANDOM_PSEUDO;
+					}
+				} else {
+					random = RANDOM_NONE;
+				}
+				for (j = 0; j < BYTES_PER_ELEMENT; ++j) {
+					chars[j] = (unsigned char) byte_to_write;
+				}
+				break;
+
+			case WIPEMODE_BCI:
+				n = (pass - 1) % bci_elements;
+				byte_to_write = bci_bytes[n];
+				if (byte_to_write < 0) {
+					if (random == RANDOM_NONE) {
+						random = opt.random ? opt.random : RANDOM_PSEUDO;
+					}
+				} else {
+					random = RANDOM_NONE;
+				}
+				for (j = 0; j < BYTES_PER_ELEMENT; ++j) {
+					chars[j] = (unsigned char) byte_to_write;
+				}
+				break;
+
 		}
 
 		char s_byte[5];
 
-		if (byte_to_write < 0) {
-			switch (opt.random) {
-				case RANDOM_PSEUDO:
-					sprintf(s_byte, "prnd");
-					break;
-				case RANDOM_WINDOWS:
-					sprintf(s_byte, "wrnd");
-					break;
+		switch (random) {
+			case RANDOM_PSEUDO:
+				sprintf(s_byte, "prnd");
+				break;
+			case RANDOM_WINDOWS:
+				sprintf(s_byte, "wrnd");
+				break;
 #ifdef HAVE_CRYPTOGRAPHIC
-				case RANDOM_CRYPTOGRAPHIC:
-					sprintf(s_byte, "crnd");
-					break;
+			case RANDOM_CRYPTOGRAPHIC:
+				sprintf(s_byte, "crnd");
+				break;
 #endif
-			}
-		} else {
-			sprintf(s_byte, "0x%02x", byte_to_write);
-			for (unsigned int i = 0; i < stats->bytes_per_sector * opt.sectors / BYTES_PER_ELEMENT; i += BYTES_PER_ELEMENT) {
-				for (int j = 0; j < BYTES_PER_ELEMENT; ++j) {
-	 				sector_data[i + j] = chars[j];
+			default:
+				sprintf(s_byte, "0x%02x", byte_to_write);
+				for (unsigned int i = 0; i < stats->bytes_per_sector * opt.sectors / BYTES_PER_ELEMENT; i += BYTES_PER_ELEMENT) {
+					for (int j = 0; j < BYTES_PER_ELEMENT; ++j) {
+						sector_data[i + j] = chars[j];
+					}
 				}
-			}
 		}
 
 		ULONGLONG starting_byte = opt.start * stats->bytes_per_sector;
@@ -978,10 +1194,25 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 
 		if (GetLastError() != NO_ERROR) {
 			_snprintf(err, sizeof(err), "Failed to seek to sector &I64d", opt.start);
-			FatalError(err);
+			Error(err);
 		}
 
 		ULONGLONG last_ticks = get_ticks(stats);
+
+#ifdef _DEBUG
+	fprintf(stderr, "\n************************************************************");
+	fprintf(stderr, "\n************************************************************");
+	fprintf(stderr, "\n************************************************************");
+	fprintf(stderr, "\n************************************************************");
+	fprintf(stderr, "\n************************************************************");
+	fprintf(stderr, "\n************************************************************\n");
+	fprintf(stderr, "pass				=%u\n", pass);
+	fprintf(stderr, "starting_byte		=%I64u\n", starting_byte);
+	fprintf(stderr, "li.QuadPart			=%I64u\n", li.QuadPart);
+	fprintf(stderr, "li.HighPart			=%lu\n", li.HighPart);
+	fprintf(stderr, "li.LowPart			=%lu\n", li.LowPart);
+	fprintf(stderr, "last_ticks			=%I64u\n", last_ticks);
+#endif
 
 		char *action = opt.read ? "read" : "write";
 
@@ -996,30 +1227,33 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 				}
 			}
 
+#ifdef _DEBUG
+	fprintf(stderr, "sector				=%I64u\n", sector);
+	fprintf(stderr, "sectors_to_process	=%lu\n", sectors_to_process);
+#endif
+
 			if (!opt.read) {
 				unsigned int i;
 
-				if (byte_to_write < 0) {
-					switch (opt.random) {
-						case RANDOM_PSEUDO:
-							for (i = 0; i < bytes_to_process; ++i) {
-								sector_data[i] = (unsigned char) rand();
-							}
-							break;
+				switch (random) {
+					case RANDOM_PSEUDO:
+						for (i = 0; i < bytes_to_process; ++i) {
+							sector_data[i] = (unsigned char) rand();
+						}
+						break;
 
-						case RANDOM_WINDOWS:
-							if (!CryptGenRandom(hProv, bytes_to_process, sector_data)) {
-								_snprintf(err, sizeof(err), "CryptGenRandom error");
-								FatalError(err);
-							}
-							break;
+					case RANDOM_WINDOWS:
+						if (!CryptGenRandom(hProv, bytes_to_process, sector_data)) {
+							_snprintf(err, sizeof(err), "CryptGenRandom error");
+							FatalError(err);
+						}
+						break;
 
 #ifdef HAVE_CRYPTOGRAPHIC
-						case RANDOM_CRYPTOGRAPHIC:
+					case RANDOM_CRYPTOGRAPHIC:
 #error "RANDOM_CRYPTOGRAPHIC has not been implemented yet"
-							break;
+						break;
 #endif
-					}
 				}
 			}
 
@@ -1045,7 +1279,7 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 
 			if (!rv || GetLastError()) {
 				_snprintf(err, sizeof(err), "Failed to %s %d bytes at sectors %I64d-%I64d", action, bytes_to_process - dwBytes, sector, sector + sectors_to_process);
-				FatalError(err);
+				Error(err);
 			}
 
 			if (opt.quiet < 2) {
@@ -1133,7 +1367,7 @@ int main(int argc, char * argv[]) {
 				break;
 			case 'p': /* -p | --passes n  Wipe device n times (default is 1) */
 				opt.passes = atoi(optarg);
-				if (opt.passes == 0 || opt.passes > 10000)
+				if (opt.passes == 0 || opt.passes >= 10000)
 					usage(1);
 				break;
 			case 'd': /* -d | --dod       Wipe device using DoD 5220.22-M method (3 passes) */
@@ -1144,6 +1378,15 @@ int main(int argc, char * argv[]) {
 				break;
 			case 'g': /* -g | --gutmann   Wipe device using Gutmann method (35 passes) */
 				opt.mode = WIPEMODE_GUTMANN;
+				break;
+			case 'E': /* -E | --doe       Wipe device using US DoE method (3 passes) */
+				opt.mode = WIPEMODE_DOE;
+				break;
+			case 'S': /* -S | --schneier  Wipe device using Bruce Schneier's method (7 passes) */
+				opt.mode = WIPEMODE_SCHNEIER;
+				break;
+			case 'b': /* -b | --bci       Wipe device using German BCI/VSITR method (7 passes) */
+				opt.mode = WIPEMODE_BCI;
 				break;
 			case 'y':
 				opt.yes = true;
@@ -1159,6 +1402,9 @@ int main(int argc, char * argv[]) {
 				opt.random = RANDOM_CRYPTOGRAPHIC;
 				break;
 #endif
+			case 'i':
+				opt.ignore = true;
+				break;
 			case 'k':
 				opt.kilobyte = true;
 				break;
@@ -1254,7 +1500,7 @@ int main(int argc, char * argv[]) {
 
 	for (i = optind; i < argc; ++i) {
 #ifdef _DEBUG
-		printf("argv[%d]=%s\n", i, argv[i]);
+printf("argv[%d]=%s\n", i, argv[i]);
 #endif
 		if (strlen(argv[i]) == 2 && tolower(argv[i][0]) >= 'a' && tolower(argv[i][0]) <= 'z' && argv[i][1] == ':') {
 			++devices;
@@ -1268,7 +1514,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	if (devices == 0) {
-		fprintf(stderr, "%s: No devices specified", progname);
+		fprintf(stderr, "%s: No devices specified\n", progname);
 		usage(1);
 	}
 
@@ -1345,7 +1591,8 @@ int main(int argc, char * argv[]) {
 			"following device(s):\n\n");
 
 		for (int i = 0; i < devices; ++i) {
-			printf("%2d: %s\n", i + 1, device[i]);
+			print_device_info(device[i]);
+//			printf("%2d: %s\n", i + 1, device[i]);
 		}
 
 		printf("\nUsing %d iteration%s of the %s\n", opt.passes, opt.passes > 1 ? "s" : "", wipe_methods[opt.mode]);
@@ -1380,8 +1627,17 @@ int main(int argc, char * argv[]) {
 		case WIPEMODE_GUTMANN:
 			opt.passes *= gutmann_elements;
 			break;
+		case WIPEMODE_DOE:
+			opt.passes *= doe_elements;
+			break;
+		case WIPEMODE_SCHNEIER:
+			opt.passes *= schneier_elements;
+			break;
+		case WIPEMODE_BCI:
+			opt.passes *= bci_elements;
+			break;
 		default:
-			FatalError("Unimplemented mode");
+			FatalError("Unimplemented wipe mode");
 	}
 
 	if (opt.passes >= 10000) {
@@ -1390,11 +1646,24 @@ int main(int argc, char * argv[]) {
 
 	HCRYPTPROV hProv = 0;
 	HCRYPTKEY hKey = 0;
+	
+	LPCSTR KeyContainerName = "MyKeyContainer";
 
 	if (opt.random == RANDOM_WINDOWS) {
 		// Get a handle to the user default provider.
-		if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, 0)) {
-			FatalError("CryptAcquireContext error");
+		if (!CryptAcquireContext(&hProv, KeyContainerName, NULL, PROV_RSA_FULL, 0)) {
+			if (GetLastError() != NTE_BAD_KEYSET) {
+				FatalError("CryptAcquireContext error");
+			}
+			
+			if (!CryptAcquireContext(
+				&hProv, 
+				KeyContainerName, 
+				NULL, 
+				PROV_RSA_FULL, 
+				CRYPT_NEWKEYSET)) {
+					FatalError("CryptAcquireContext error");
+			}
 		}
 
 		// Create a random block cipher session key.
@@ -1432,7 +1701,7 @@ int main(int argc, char * argv[]) {
 	stats.all_start_ticks = get_ticks(&stats);
 
 	for (i = 0; i < devices; ++i) {
-		wipe_device(device[i], bytes, byte, &stats, hKey, hProv);
+		wipe_device(device[i], bytes, byte, &stats, hProv);
 	}
 
 	if (opt.quiet < 2 && devices > 1) {

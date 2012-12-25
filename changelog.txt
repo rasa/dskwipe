@@ -1,5 +1,13 @@
 dskwipe changelog
 
+Version 0.4 - 25 Dec 12
+
+	Works on mounted disks in Windows 7
+	Fixed -2 Windows RNG function in Windows 7
+	Added Bruce Schneier's wiping method (7 passes)
+	Added German BCI/VSITR wiping method (7 passes)
+	Other minor bugfixes
+	
 Version 0.3 - 10 Apr 07:
 
 	Require 'yes' to start wipe
