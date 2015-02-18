@@ -1,7 +1,15 @@
 # Microsoft Developer Studio Generated Dependency File, included by dskwipe.mak
 
 .\dskwipe.cpp : \
-	"..\shared\getopt.h"\
-	"..\shared\ver_defaults.h"\
+	{$(INCLUDE)}"basetsd.h"\
+	{$(INCLUDE)}"guiddef.h"\
+	{$(INCLUDE)}"propidl.h"\
+	{$(INCLUDE)}"reason.h"\
+	{$(INCLUDE)}"specstrings.h"\
+	{$(INCLUDE)}"stralign.h"\
+	{$(INCLUDE)}"tvout.h"\
+	{$(INCLUDE)}"winefs.h"\
+	{$(INCLUDE)}"getopt.h"\
+	{$(INCLUDE)}"ver_defaults.h"\
 	".\version.h"\
 	

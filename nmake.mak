@@ -1,10 +1,10 @@
 all:
-	$(CYGENV) nmake /f dskwipe.mak CFG="dskwipe - Win32 Release"	all
-	$(CYGENV) nmake /f dskwipe.mak CFG="dskwipe - Win32 Debug"	all
+	$(MAKE) /f dskwipe.mak CFG="dskwipe - Win32 Release"	all
+	$(MAKE) /f dskwipe.mak CFG="dskwipe - Win32 Debug"	all
 
 clean:
-	$(CYGENV) nmake /f dskwipe.mak CFG="dskwipe - Win32 Release"	clean
-	$(CYGENV) nmake /f dskwipe.mak CFG="dskwipe - Win32 Debug"	clean
+	$(MAKE) /f dskwipe.mak CFG="dskwipe - Win32 Release"	clean
+	$(MAKE) /f dskwipe.mak CFG="dskwipe - Win32 Debug"	clean
 
 realclean: clean
 	-cmd /c del /s *.bak
