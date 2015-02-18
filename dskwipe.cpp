@@ -23,6 +23,12 @@ catch ctrl-C to report where to start over
 Implement HAVE_CRYPTOGRAPHIC using TrueCrypt's RNG
 */
 
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+#pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "user32.lib")
+#endif
+
 #include <windows.h>
 
 #include <stdio.h>
@@ -845,7 +851,7 @@ void print_device_info(char *device_name) {
 	}
 
 	DISK_GEOMETRY driveInfo;
-	PARTITION_INFORMATION diskInfo;
+	//PARTITION_INFORMATION diskInfo;
 	DWORD dwResult;
 	BOOL bResult;
 
@@ -1332,7 +1338,7 @@ int main(int argc, char * argv[]) {
 	time_t t;
 	time(&t);
 
-	srand(t ^ _getpid());
+	srand((unsigned int) t ^ _getpid());
 
 	progname = basename(argv[0]);
 
