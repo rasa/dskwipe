@@ -2,8 +2,8 @@
 
 #define VER_INTERNAL_NAME 		"dskwipe"
 #define	VER_FILE_DESCRIPTION	"Securely wipe disk media"
-#define VER_MAJOR				0
-#define VER_MINOR				5
-#define VER_STRING2				"0.5"
+#define VER_MAJOR				1
+#define VER_MINOR				0
+#define VER_STRING2				"1.0"
 
 #include "ver_defaults.h"

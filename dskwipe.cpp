@@ -1349,6 +1349,10 @@ int main(int argc, char * argv[]) {
 
 		int c = getopt_long(argc, argv, short_options, long_options, &option_index);
 
+		if (opterr) {
+			usage(1);
+		}
+
 		if (c == -1)
 			break;
 
@@ -1467,7 +1471,9 @@ int main(int argc, char * argv[]) {
 				++opt.help;
 				break;
 			default:
-				fprintf(stderr, "Invalid option: '%s'\n", optarg);
+				if (optarg) {
+					fprintf(stderr, "Invalid option: '%s'\n", optarg);
+				}
 				usage(1);
 				break;
 		}

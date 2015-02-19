@@ -1,4 +1,4 @@
-## 0.5 (unreleased)
+## 1.0 (unreleased)
 
   * Updated to Visual Studio 2013
   * Switch to MIT license
