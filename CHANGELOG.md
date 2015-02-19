@@ -1,21 +1,24 @@
-dskwipe changelog
+## 0.5 (unreleased)
 
-Version 0.4 - 25 Dec 12
+  * Updated to Visual Studio 2013
+  * Switch to MIT license
 
-	Works on mounted disks in Windows 7
-	Fixed -2 Windows RNG function in Windows 7
-	Added Bruce Schneier's wiping method (7 passes)
-	Added German BCI/VSITR wiping method (7 passes)
-	Other minor bugfixes
-	
-Version 0.3 - 10 Apr 07:
+## 0.4 (25 Dec 12)
 
-	Require 'yes' to start wipe
+  * Works on mounted disks in Windows 7
+  * Fixed -2 Windows RNG function in Windows 7
+  * Added Bruce Schneier's wiping method (7 passes)
+  * Added German BCI/VSITR wiping method (7 passes)
+  * Other minor bugfixes
 
-Version 0.2 - 05 Mar 07:
+## 0.3 (10 Apr 07)
 
-	Corrected a few minor grammatical errors
+  * Require 'yes' to start wipe
 
-Version 0.1 - 27 Feb 07:
+## 0.2 (05 Mar 07)
 
-	Initial release
+  * Corrected a few minor grammatical errors
+
+## 0.1 (27 Feb 07)
+
+  * Initial release

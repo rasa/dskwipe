@@ -1,9 +1,11 @@
-dskwipe 0.4 - 25 December 2012
-Copyright (c) 2006-2012 Ross Smith II (http://smithii.com) All Rights Reserved
+# dskwipe 
 
-------------------------------------------------------------------------------
+Securely wipe disk media
 
-Usage: dskwipe [options] device(s) [byte(s)]
+## Usage
+
+````
+dskwipe [options] device(s) [byte(s)]
  bytes can be one or more numbers between 0 to 255, use 0xNN for hexidecimal,
   0NNN for octal, r for random bytes, default is 0
 
@@ -33,8 +35,11 @@ Options:
  -i | --ignore    Ignore certain read/write errors
  -v | --version   Show version and copyright information and quit
  -? | --help      Show this help message and quit (-?? = more help, etc.)
- 
-Examples:
+````
+
+## Examples
+
+````
  dskwipe -l                         & lists devices, and exit
  dskwipe \\.\PhysicalDrive1         & erase disk once using the byte 0
  dskwipe \Device\Ramdisk 1          & erase disk once using the byte 1
@@ -45,30 +50,35 @@ Examples:
  dskwipe -p 2 --dod \Device\Ramdisk & erase disk twice using DoD method
  dskwipe -1 \Device\Ramdisk r r     & erase disk twice using weak RNG
  dskwipe -2 \Device\Ramdisk r r r r & erase disk four times using strong RNG
- 
+```` 
 Here are some device names that have worked for me:
 
+````
 \\.\PhysicalDrive0
 \\.\c:
 \device\harddisk0\partition0
 \device\harddisk0\partition1
 \device\floppy0
 \device\ramdisk
+````
 
-------------------------------------------------------------------------------
+## Contributing
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+To contribute to this project, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+## Bugs
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+To view existing bugs, or report a new bug, please see the [issues](/issues) page for this project.
 
-$Id$
+## License
+
+This project is [MIT licensed](LICENSE).
+
+## Changelog
+
+Please see [CHANGELOG.md](CHANGELOG.md) for the version history for this project.
+
+## Contact
+
+This project was originally developed by [Ross Smith II](mailto:ross@smithii.com).
+Any enhancements and suggestions are welcome.
