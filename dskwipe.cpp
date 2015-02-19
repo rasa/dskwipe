@@ -1,19 +1,4 @@
-/*
-
-$Id$
-
-Copyright (c) 2005-2012 Ross Smith II (http://smithii.com). All rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of version 2 of the GNU General Public License
-as published by the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
-
-*/
+// Copyright (c) 2005-2015 Ross Smith II. See Mit LICENSE in /LICENSE
 
 /*
 todo/wishlist
@@ -441,7 +426,7 @@ static char *seconds_to_hhmmss(DWORD seconds, char *rv, int bufsiz) {
 		_snprintf(rv, bufsiz, "%02dd%02d%02d", days, hours, minutes);
 		return rv;
 	}
-	
+
 	_snprintf(rv, bufsiz, "%02d:%02d:%02d", hours, minutes, seconds);
 
 	return rv;
@@ -1652,7 +1637,7 @@ printf("argv[%d]=%s\n", i, argv[i]);
 
 	HCRYPTPROV hProv = 0;
 	HCRYPTKEY hKey = 0;
-	
+
 	LPCSTR KeyContainerName = "MyKeyContainer";
 
 	if (opt.random == RANDOM_WINDOWS) {
@@ -1661,12 +1646,12 @@ printf("argv[%d]=%s\n", i, argv[i]);
 			if (GetLastError() != NTE_BAD_KEYSET) {
 				FatalError("CryptAcquireContext error");
 			}
-			
+
 			if (!CryptAcquireContext(
-				&hProv, 
-				KeyContainerName, 
-				NULL, 
-				PROV_RSA_FULL, 
+				&hProv,
+				KeyContainerName,
+				NULL,
+				PROV_RSA_FULL,
 				CRYPT_NEWKEYSET)) {
 					FatalError("CryptAcquireContext error");
 			}
