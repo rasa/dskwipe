@@ -1,9 +1,10 @@
-## 1.0 (unreleased)
+## 1.0 (20-Feb-2015)
 
+  * Workaround buggy getopt implementation
   * Updated to Visual Studio 2013
   * Switch to MIT license
 
-## 0.4 (25 Dec 12)
+## 0.4 (25-Dec-2012)
 
   * Works on mounted disks in Windows 7
   * Fixed -2 Windows RNG function in Windows 7
@@ -11,14 +12,14 @@
   * Added German BCI/VSITR wiping method (7 passes)
   * Other minor bugfixes
 
-## 0.3 (10 Apr 07)
+## 0.3 (10-Apr-2007)
 
   * Require 'yes' to start wipe
 
-## 0.2 (05 Mar 07)
+## 0.2 (05-Mar-2007)
 
   * Corrected a few minor grammatical errors
 
-## 0.1 (27 Feb 07)
-
+## 0.1 (27-Feb-2007)
+ 
   * Initial release
