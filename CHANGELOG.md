@@ -1,6 +1,6 @@
 ## 1.0 (20-Feb-2015)
 
-  * Workaround buggy getopt implementation
+  * Improve option processing
   * Updated to Visual Studio 2013
   * Switch to MIT license
 
