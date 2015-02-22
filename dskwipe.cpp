@@ -1337,11 +1337,6 @@ int main(int argc, char * argv[]) {
 	int option_index = 0;
 	optind = 1;
 
-#ifdef _DEBUG
-	for (i = 0; i < argc; ++i) {
-		printf("argv[%d]=%s\n", i, argv[i]);
-	}
-#endif
 	while (true) {
 		int i;
 		if (optind < argc && argv[optind] && argv[optind][0] == '/')
