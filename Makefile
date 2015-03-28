@@ -94,7 +94,7 @@ endif
 define FIND_SIGNTOOL
 
 ifndef SIGNTOOL
-	SDK_DIR:=$$(shell cygpath -m -s $(1) 2>/dev/null)
+	SDK_DIR:=$$(shell cygpath -m -s "$(1)" 2>/dev/null)
 	ifneq ($$(wildcard $$(SDK_DIR)/signtool.exe),)
 		SIGNTOOL:=$$(SDK_DIR)/signtool.exe
 	endif
@@ -371,7 +371,7 @@ publish:	$(UPLOADED_FILES) $(SCANNED_FILES)
 
 .PHONY:	tidy
 tidy:	clean
-	-rm -f  $(CLEANED_FILES) \
+	-rm -f  $(CLEAN_FILES) \
 		$(HASH_FILES) \
 		$(SIGNED_FILES) \
 		$(UPXED_FILES)

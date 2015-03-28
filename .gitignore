@@ -458,3 +458,8 @@ sha1s.txt
 sha256s.txt
 *.asc
 *.sha256
+
+.*.uploaded
+.*.scanned
+.*.released
+.*.tagged
