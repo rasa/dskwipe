@@ -199,7 +199,7 @@ define SCAN_FILE
 		--output /tmp/$(1).tmp \
 		--include \
 		$(VIRUSTOTAL_URL) | \
-			grep ^201 || (cat /tmp/$(1).tmp ; echo ; exit 1)
+			grep ^2 || (cat /tmp/$(1).tmp ; echo ; exit 1)
 	-rm -f /tmp/$(1).tmp
 	touch .$(1).scanned
 
