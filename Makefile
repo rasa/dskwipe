@@ -189,7 +189,7 @@ SCANNED_FILES=
 
 define SCAN_FILE
 
-.$(1).scanned: $(1)
+.$(2)-$(1).scanned: $(1)
 	test -n "$(VIRUSTOTAL_API_KEY)" || (echo VIRUSTOTAL_API_KEY not set >&2 ; exit 1)
 	$(CURL) $(CURL_OPTS) \
 		-X POST \
@@ -201,9 +201,9 @@ define SCAN_FILE
 		$(VIRUSTOTAL_URL) | \
 			grep -q ^2 || (cat /tmp/$(1).tmp ; echo ; exit 1)
 	-rm -f /tmp/$(1).tmp
-	touch .$(1).scanned
+	touch .$(2)-$(1).scanned
 
-SCANNED_FILES+=.$(1).scanned
+SCANNED_FILES+=.$(2)-$(1).scanned
 
 endef
 
@@ -355,9 +355,9 @@ upload:	$(UPLOADED_FILES)
 
 #######################################################################
 
-$(eval $(call SCAN_FILE,$(APP_EXE)))
+$(eval $(call SCAN_FILE,$(APP_EXE),$(TAG)))
 
-$(eval $(call SCAN_FILE,$(APP_ZIP)))
+$(eval $(call SCAN_FILE,$(APP_ZIP),$(TAG)))
 
 .PHONY:	scan
 scan:	$(SCANNED_FILES)
