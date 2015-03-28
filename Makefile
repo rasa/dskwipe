@@ -164,7 +164,7 @@ define UPLOAD_FILE
 		--output /tmp/$(1).tmp \
 		--include \
 		"$(RELEASE_URL)/tags/$(TAG)" |\
-			grep ^2 || (cat /tmp/$(1).tmp ; echo ; exit 1)
+			grep -q ^2 || (cat /tmp/$(1).tmp ; echo ; exit 1)
 	sed -nr -e 's/.*upload_url": "(.*)\{.*/url=\1?name=$(1)/p' /tmp/$(1).tmp >/tmp/$(1).curlrc
 	$(CURL) $(CURL_OPTS) \
 		--request POST \
@@ -174,7 +174,7 @@ define UPLOAD_FILE
 		--output /tmp/$(1)-2.tmp \
 		--include \
 		--config /tmp/$(1).curlrc | \
-			grep ^2 || (cat /tmp/$(1)*.tmp ; echo ; exit 1)
+			grep -q ^2 || (cat /tmp/$(1)*.tmp ; echo ; exit 1)
 	-rm -f /tmp/$(1).tmp /tmp/$(1)-2.tmp
 	@-echo $(1) uploaded to Github
 	touch .$(1).uploaded
@@ -199,7 +199,7 @@ define SCAN_FILE
 		--output /tmp/$(1).tmp \
 		--include \
 		$(VIRUSTOTAL_URL) | \
-			grep ^2 || (cat /tmp/$(1).tmp ; echo ; exit 1)
+			grep -q ^2 || (cat /tmp/$(1).tmp ; echo ; exit 1)
 	-rm -f /tmp/$(1).tmp
 	touch .$(1).scanned
 
@@ -315,7 +315,7 @@ $(RELEASED):	$(TAGGED)
 		--write-out "%{http_code}" \
 		--output /tmp/$(RELEASED).tmp \
 		--include \
-		"$(RELEASE_URL)" | grep ^2 || (cat /tmp/$(RELEASED).tmp ; echo ; exit 1)
+		"$(RELEASE_URL)" | grep -q ^2 || (cat /tmp/$(RELEASED).tmp ; echo ; exit 1)
 	touch $@
 	@-echo Release $(TAG) created on Github
 
