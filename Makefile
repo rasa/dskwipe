@@ -58,7 +58,7 @@ TAG?=v$(VER)
 ## fails occasionally: http://timestamp.verisign.com/scripts/timstamp.dll
 TIMESTAMP_URL?=http://timestamp.globalsign.com/scripts/timstamp.dll
 VIRUSTOTAL_URL?=https://www.virustotal.com/vtapi/v2/file/scan
-ZIP_OPTS+=-9o
+ZIP_OPTS+=-9
 
 APP_FILES+=$(HASH_FILES)
 RELEASED:=.$(TAG).released
@@ -158,7 +158,7 @@ UPLOADED_FILES=
 
 define UPLOAD_FILE
 
-.$(1).uploaded:	$(RELEASED)
+.$(1).uploaded:	$(1) $(RELEASED)
 	$(CURL) $(CURL_OPTS) \
 		--write-out "%{http_code}" \
 		--output /tmp/$(1).tmp \
