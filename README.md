@@ -1,4 +1,4 @@
-# dskwipe  [![Flattr this][flatter_png]][flatter]
+# dskwipe [![Flattr this][flatter_png]][flatter]
 
 Securely wipe disk media.
 
@@ -60,6 +60,31 @@ Here are some device names that have worked for me:
 \device\harddisk0\partition1
 \device\floppy0
 \device\ramdisk
+````
+
+## Verify a Release
+
+To verify a release, download the .zip, .sha256, and .asc files for the release 
+(replacing dskwipe-1.1-win32.zip with the release you are verifying):
+
+````
+$ wget https://github.com/rasa/dskwipe/releases/download/v1.1/dskwipe-1.1-win32.zip{,.sha256,.asc}
+````
+
+Next, check that sha256sum reports "OK":
+````
+$ sha256sum -c dskwipe-1.1-win32.zip.sha256
+dskwipe-1.1-win32.zip: OK
+````
+
+Lastly, check that GPG reports "Good signature":
+
+````
+$ gpg --keyserver hkps.pool.sks-keyservers.net --recv-key 0x105a5225b6ab4b22
+$ gpg --verify dskwipe-1.1-win32.zip.asc dskwipe-1.1-win32.zip
+gpg:                using RSA key 0xFF914F74B4BB6EF3
+gpg: Good signature from "Ross Smith II <ross@smithii.com>" [ultimate]
+...
 ````
 
 ## Contributing

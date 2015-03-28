@@ -20,6 +20,7 @@ Implement HAVE_CRYPTOGRAPHIC using TrueCrypt's RNG
 #include <time.h>		// time()
 #include <process.h>	// _getpid()
 #include <wincrypt.h>
+#include <winioctl.h>
 
 #include "getopt.h"
 
