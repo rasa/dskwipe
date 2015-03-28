@@ -296,7 +296,7 @@ dist:	zip
 TAGGED:=.$(TAG).tagged
 
 $(TAGGED):	$(APP_ZIP)
-	if ! git tag | grep -q -P "\b$(TAG)\b"; then
+	if ! git tag | grep -q -P "\b$(TAG)\b"; then \
 		git tag -a $(TAG) -m "Version $(VER)" ;\
 	fi
 	git push origin --tags
