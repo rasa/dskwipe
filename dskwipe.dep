@@ -1,15 +1,13 @@
 # Microsoft Developer Studio Generated Dependency File, included by dskwipe.mak
 
 .\dskwipe.cpp : \
-	{$(INCLUDE)}"basetsd.h"\
-	{$(INCLUDE)}"guiddef.h"\
-	{$(INCLUDE)}"propidl.h"\
-	{$(INCLUDE)}"reason.h"\
-	{$(INCLUDE)}"specstrings.h"\
-	{$(INCLUDE)}"stralign.h"\
-	{$(INCLUDE)}"tvout.h"\
-	{$(INCLUDE)}"winefs.h"\
 	{$(INCLUDE)}"getopt.h"\
-	{$(INCLUDE)}"ver_defaults.h"\
 	".\version.h"\
+	{$(INCLUDE)}"ver_defaults.h"\
+	
+
+.\dskwipe.rc : \
+	".\dskwipe.ico"\
+	".\version.h"\
+	{$(INCLUDE)}"ver_defaults.h"\
 	

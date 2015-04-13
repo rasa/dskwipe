@@ -3,8 +3,8 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="dskwipe"
-	ProjectGUID="{54D2922C-4D55-461F-9B3C-967849BC7F59}"
-	TargetFrameworkVersion="131072"
+	ProjectGUID="{AE593471-41D7-4C74-AD63-9987BB801670}"
+	TargetFrameworkVersion="0"
 	>
 	<Platforms>
 		<Platform
@@ -240,6 +240,30 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
+			<File
+				RelativePath="dskwipe.ico"
+				>
+			</File>
+			<File
+				RelativePath="dskwipe.rc"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

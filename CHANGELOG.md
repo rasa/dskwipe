@@ -1,4 +1,10 @@
+## 1.2 (07-Apr-2015)
+
+  * Add version number to executable
+  * Add .rc and .ico files to build
+
 ## 1.1 (27-Mar-2015)
+
   * Executables signed with StartSSL code signing certificate
   * Release zip files are gpg signed and sha256 hashed
   * Standardize build scripts
