@@ -1,5 +1,2 @@
-*.cmd	eol=crlf
 *.dsp	eol=crlf
 *.dsw	eol=crlf
-*.sln	eol=crlf
-*.vcproj	eol=crlf

@@ -452,6 +452,7 @@ FakesAssemblies/
 
 # backup files
 *.bak
+*.old
 
 md5s.txt
 sha1s.txt
