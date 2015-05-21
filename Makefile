@@ -49,10 +49,14 @@ APP_URL?=http://github.com/rasa/$(REPO)/
 APP_ZIP?=$(APP)-$(VER)-$(FLAVOR).zip
 CODESIGN_PFX?=../codesign.pfx
 CURL?=curl
-CURL_OPTS?=--netrc --insecure --silent --show-error 
+CURL_OPTS?=--netrc --insecure --silent --show-error
 GPG_OPTS?=
 HASH_FILES?=md5s.txt sha1s.txt sha256s.txt
+ifeq ("$(FLAVOR)", "win32")
 RELEASE_APP_EXE?=Release/$(APP_EXE)
+else
+RELEASE_APP_EXE?=Release/$(FLAVOR)/$(APP_EXE)
+endif
 RELEASE_URL?=https://api.github.com/repos/rasa/$(REPO)/releases
 TAG?=v$(VER)
 ## fails occasionally: http://timestamp.verisign.com/scripts/timstamp.dll
@@ -121,7 +125,7 @@ define UPX_FILE
 $(2): $(1)
 	test -d $(dir $(2)) || mkdir $(dir $(2))
 	test ! -f $(2) || rm -f $(2)
-	upx -9 -o $(2) $(1)
+	upx --best --overlay=skip --quiet -o $(2) $(1) || cp -p $(1) $(2)
 
 UPXED_FILES+=$(2)
 
@@ -284,7 +288,7 @@ hashes:	$(HASH_FILES)
 $(APP_ZIP):	$(APP_FILES)
 	-rm -f $@
 	zip $(ZIP_OPTS) $@ $^
-	
+
 .PHONY:	zip
 zip:	$(APP_ZIP)
 
