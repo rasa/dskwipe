@@ -464,3 +464,6 @@ sha256s.txt
 .*.scanned
 .*.released
 .*.tagged
+
+*.opendb
+

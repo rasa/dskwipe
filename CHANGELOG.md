@@ -1,7 +1,8 @@
-## 1.3 (unreleased)
+## 1.3 (18-Dec-2016)
 
-  * Update Makefile
-
+  * Wipe entire sector (fixes #1)
+  * Update to Visual Studio 2015
+  
 ## 1.2 (07-Apr-2015)
 
   * Add version number to executable

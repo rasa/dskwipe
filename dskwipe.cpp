@@ -1,4 +1,4 @@
-// Copyright (c) 2005-2015 Ross Smith II. See Mit LICENSE in /LICENSE
+// Copyright (c) 2005-2016 Ross Smith II. See Mit LICENSE in /LICENSE
 
 /*
 todo/wishlist
@@ -371,7 +371,7 @@ static void Warning(char *str) {
 		(LPTSTR) &lpMsgBuf,
 		0,
 		NULL);
-	fprintf(stderr, "\n%s: %s (0x%x)\n", str, lpMsgBuf, err);
+	fprintf(stderr, "\n%s: %s (0x%x)\n", str, (char *) lpMsgBuf, err);
 }
 
 static void Error(char *str) {
@@ -550,7 +550,7 @@ static void print_stats(unsigned int pass, char *s_byte, ULONGLONG sector, t_sta
 	SetConsoleTitle(buf);
 
 	if (opt.quiet == 1) {
-		_snprintf(buf, sizeof(buf), "%s - %.3f%% complete - %s remaining\r", stats->device_name, all_pct, remaining_time, progname);
+		_snprintf(buf, sizeof(buf), "%s - %.3f%% complete - %s remaining\r", stats->device_name, all_pct, remaining_time);
 		printf("%s\r", buf);
 		fflush(stdout);
 		return;
@@ -1168,7 +1168,7 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 #endif
 			default:
 				sprintf(s_byte, "0x%02x", byte_to_write);
-				for (unsigned int i = 0; i < stats->bytes_per_sector * opt.sectors / BYTES_PER_ELEMENT; i += BYTES_PER_ELEMENT) {
+				for (unsigned int i = 0; i <= stats->bytes_per_sector * opt.sectors - BYTES_PER_ELEMENT; i += BYTES_PER_ELEMENT) {
 					for (int j = 0; j < BYTES_PER_ELEMENT; ++j) {
 						sector_data[i + j] = chars[j];
 					}
@@ -1185,7 +1185,7 @@ int wipe_device(char *device_name, int bytes, int *byte, t_stats *stats, HCRYPTP
 		DWORD dw = SetFilePointer(hnd, li.LowPart, &li.HighPart, FILE_BEGIN);
 
 		if (GetLastError() != NO_ERROR) {
-			_snprintf(err, sizeof(err), "Failed to seek to sector &I64d", opt.start);
+			_snprintf(err, sizeof(err), "Failed to seek to sector %I64d", opt.start);
 			Error(err);
 		}
 
@@ -1344,10 +1344,6 @@ int main(int argc, char * argv[]) {
 			argv[optind][0] = '-';
 
 		int c = getopt_long(argc, argv, short_options, long_options, &option_index);
-
-		if (opterr) {
-			usage(1);
-		}
 
 		if (c == -1)
 			break;
