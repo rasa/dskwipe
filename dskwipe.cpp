@@ -550,7 +550,7 @@ static void print_stats(unsigned int pass, char *s_byte, ULONGLONG sector, t_sta
 	SetConsoleTitle(buf);
 
 	if (opt.quiet == 1) {
-		_snprintf(buf, sizeof(buf), "%s - %.3f%% complete - %s remaining\r", stats->device_name, all_pct, remaining_time);
+		_snprintf(buf, sizeof(buf), "%s - Ends at %s (%s more), %.3f%% at sector %d\r", stats->device_name, finish_time, remaining_time, all_pct, sector);
 		printf("%s\r", buf);
 		fflush(stdout);
 		return;
